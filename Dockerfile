@@ -1,4 +1,4 @@
-FROM alpine:3.16
+FROM alpine:3.21.1
 LABEL maintainer="Walter Leibbrandt"
 LABEL version="0.4.3"
 # XXX Copy version to Docker image tag in .github/workflows/docker.yml when changing!
