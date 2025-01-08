@@ -1,7 +1,6 @@
 FROM alpine:3.21.1
-LABEL maintainer="Walter Leibbrandt"
-LABEL version="0.4.3"
-# XXX Copy version to Docker image tag in .github/workflows/docker.yml when changing!
+LABEL maintainer="Richard Beumer"
+LABEL version="0.1.0"
 
 EXPOSE 8080
 
@@ -12,16 +11,13 @@ ENV PVPN_USERNAME= \
     PVPN_PASSWORD_FILE= \
     PVPN_TIER=2 \
     PVPN_PROTOCOL=tcp \
-    PVPN_CMD_ARGS="connect --fastest" \
-    PVPN_DEBUG= \
     HOST_NETWORK= \
     DNS_SERVERS_OVERRIDE="8.8.8.8"
 
 COPY app /app
-COPY pvpn-cli /root/.pvpn-cli
 
-RUN apk --update add coreutils openvpn privoxy procps python3 runit git \
-    && python3 -m ensurepip \
-    && pip3 install git+https://github.com/Rafficer/linux-cli-community.git@v$PVPN_CLI_VER
+RUN apk --update add bash openvpn privoxy runit \
+    && wget "https://raw.githubusercontent.com/ProtonVPN/scripts/master/update-resolv-conf.sh" -O "/etc/openvpn/update-resolv-conf" \
+    && chmod +x "/etc/openvpn/update-resolv-conf"
 
 CMD ["runsvdir", "/app"]
