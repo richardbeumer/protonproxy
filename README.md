@@ -202,3 +202,4 @@ ProtonVPN. For example, to use Quad9 DNS servers, set
 `DNS_SERVERS_OVERRIDE=9.9.9.9,149.112.112.112`.
 
 Default: _empty_ (ProtonVPN's DNS server is used)
+

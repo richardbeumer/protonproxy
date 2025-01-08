@@ -1,17 +1,17 @@
-#!/bin/sh
+#!/bin/bash
 
 # Create the necessary file structure for /dev/net/tun
 # required to run on docker swarm, as there are no devices available
-if ( [ ! -c /dev/net/tun ] ); then
-  if ( [ ! -d /dev/net ] ); then
-    mkdir -m 755 /dev/net
-  fi
-  mknod /dev/net/tun c 10 200
-  chmod 0755 /dev/net/tun
-  echo "Created /dev/net/tun."
-fi
+#if ( [ ! -c /dev/net/tun ] ); then
+#  if ( [ ! -d /dev/net ] ); then
+#    mkdir -m 755 /dev/net
+#  fi
+#  mknod /dev/net/tun c 10 200
+#  chmod 0755 /dev/net/tun
+#  echo "Created /dev/net/tun."
+#fi
 
-PVDIR=/root/.pvpn-cli
+PVDIR=/app
 
 if [ -z "$PVPN_USERNAME" ] && [ -z "$PVPN_USERNAME_FILE" ]; then
 	echo "Error: Either env var \$PVPN_USERNAME or \$PVPN_USERNAME_FILE is required."
@@ -27,25 +27,24 @@ fi
 [ -f "$PVPN_PASSWORD_FILE" ] && PVPN_PASSWORD=$(cat "$PVPN_PASSWORD_FILE")
 
 # Initialize config
-if [ ! -f $PVDIR/pvpn-cli.cfg ]; then
-	cp $PVDIR/pvpn-cli.cfg.clean $PVDIR/pvpn-cli.cfg
-	sed -i \
-		-e "s/PVPN_USERNAME/$PVPN_USERNAME/" \
-		-e "s/PVPN_PROTOCOL/$PVPN_PROTOCOL/" \
-		-e "s/PVPN_TIER/$PVPN_TIER/" \
-		$PVDIR/pvpn-cli.cfg
-fi
+#if [ ! -f $PVDIR/pvpn-cli.cfg ]; then
+#	cp $PVDIR/pvpn-cli.cfg.clean $PVDIR/pvpn-cli.cfg
+#	sed -i \
+#		-e "s/PVPN_USERNAME/$PVPN_USERNAME/" \
+#		-e "s/PVPN_PROTOCOL/$PVPN_PROTOCOL/" \
+#		-e "s/PVPN_TIER/$PVPN_TIER/" \
+#		$PVDIR/pvpn-cli.cfg
+#fi
 
-echo "$PVPN_USERNAME" > $PVDIR/pvpnpass
-echo "$PVPN_PASSWORD" >> $PVDIR/pvpnpass
-chmod 0600 $PVDIR/pvpnpass
+echo "$PVPN_USERNAME" > $PVDIR/ovpnpass
+echo "$PVPN_PASSWORD" >> $PVDIR/ovpnpass
+chmod 0600 $PVDIR/ovpnpass
 
 # Connect to ProtonVPN
-protonvpn refresh
-# shellcheck disable=SC2086
-protonvpn $PVPN_CMD_ARGS
+openvpn --config $PVDIR/ovpn.ovpn --auth-user-pass $PVDIR/ovpnpass --daemon
+sleep 5
 
-if ! ip link show proton0 > /dev/null; then
+if ! ip link show tun0 > /dev/null; then
 	echo "Failed to bring up VPN :("
 	exit 1
 fi
