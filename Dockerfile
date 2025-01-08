@@ -16,8 +16,8 @@ ENV PVPN_USERNAME= \
 
 COPY app /app
 
-RUN apk --update add bash openvpn privoxy runit \
-    && wget "https://raw.githubusercontent.com/ProtonVPN/scripts/master/update-resolv-conf.sh" -O "/etc/openvpn/update-resolv-conf" \
-    && chmod +x "/etc/openvpn/update-resolv-conf"
+RUN apk --no-cache add bash openvpn privoxy runit 
+ADD https://raw.githubusercontent.com/ProtonVPN/scripts/master/update-resolv-conf.sh /etc/openvpn/update-resolv-conf 
+RUN chmod +x "/etc/openvpn/update-resolv-conf"
 
 CMD ["runsvdir", "/app"]
