@@ -41,7 +41,7 @@ echo "$PVPN_PASSWORD" >> $PVDIR/ovpnpass
 chmod 0600 $PVDIR/ovpnpass
 
 # Connect to ProtonVPN
-openvpn --config $PVDIR/ovpn.ovpn --auth-user-pass $PVDIR/ovpnpass --daemon
+openvpn --config $PVDIR/ovpn.ovpn --auth-user-pass $PVDIR/ovpnpass --remote $PVPN_SERVER_IP 8443 --daemon
 sleep 5
 
 if ! ip link show tun0 > /dev/null; then
