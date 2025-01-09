@@ -1,15 +1,7 @@
 #!/bin/bash
 
 # Create the necessary file structure for /dev/net/tun
-# required to run on docker swarm, as there are no devices available
-#if ( [ ! -c /dev/net/tun ] ); then
-#  if ( [ ! -d /dev/net ] ); then
-#    mkdir -m 755 /dev/net
-#  fi
-#  mknod /dev/net/tun c 10 200
-#  chmod 0755 /dev/net/tun
-#  echo "Created /dev/net/tun."
-#fi
+
 
 PVDIR=/app
 
@@ -27,14 +19,6 @@ fi
 [ -f "$PVPN_PASSWORD_FILE" ] && PVPN_PASSWORD=$(cat "$PVPN_PASSWORD_FILE")
 
 # Initialize config
-#if [ ! -f $PVDIR/pvpn-cli.cfg ]; then
-#	cp $PVDIR/pvpn-cli.cfg.clean $PVDIR/pvpn-cli.cfg
-#	sed -i \
-#		-e "s/PVPN_USERNAME/$PVPN_USERNAME/" \
-#		-e "s/PVPN_PROTOCOL/$PVPN_PROTOCOL/" \
-#		-e "s/PVPN_TIER/$PVPN_TIER/" \
-#		$PVDIR/pvpn-cli.cfg
-#fi
 
 echo "$PVPN_USERNAME" > $PVDIR/ovpnpass
 echo "$PVPN_PASSWORD" >> $PVDIR/ovpnpass
