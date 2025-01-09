@@ -1,10 +1,3 @@
-# REPOSITORY MOVED
-Please note the repository has been moved from mooleshacat/proton-privoxy to catspeed-cc/proton-privoxy.
-
-You can update your local clone with ```git remote set-url origin https://github.com/catspeed-cc/proton-privoxy```
-
-<br />
-
 # ProtonVPN Privoxy Docker
 
 Docker container for setting up a [Privoxy](https://www.privoxy.org/) proxy that pushes traffic over a
@@ -12,7 +5,7 @@ Docker container for setting up a [Privoxy](https://www.privoxy.org/) proxy that
 
 Build Docker image:
 ```
-docker build -t moolehsacat/proton-privoxy .
+docker build -t proton-privoxy .
 ```
 
 Run Docker container:
@@ -53,86 +46,14 @@ services:
 
 This will start a Docker container that
 
-1. initializes a `protonvpn` CLI configuration
-2. refreshes ProtonVPN server data (connects to https://api.protonvpn.ch)
-3. sets up an OpenVPN connection to ProtonVPN with your ProtonVPN account details, and
-4. starts a Privoxy server, accessible at http://127.0.0.1:8888, that directs traffic over your VPN connection.
+1. sets up an OpenVPN connection to ProtonVPN with your ProtonVPN account details, and
+2. starts a Privoxy server, accessible at http://127.0.0.1:8888, that directs traffic over your VPN connection.
 
 Test:
 
 ```
 curl --proxy http://127.0.0.1:8888 https://ipinfo.io/ip
 ```
-
-## Scripts
-
-### script configuration
-- Clone this repository somewhere in root account
-```
-cd /root
-git clone https://github.com/mooleshacat/proton-privoxy.git
-```
-- Copy config.cfg.example to config.cfg ```cp config.cfg.example config.cfg```
-- Edit the config.cfg file to your liking (most defaults are fine, just put your login/pass) ```nano config.cfg```
-- Run scripts as root (the original code uses docker container which requires root on default installation)
-
-### proton-privoxy.sh
-Run this script ```./proton-privoxy.sh``` to install or upgrade the proton-privoxy container.
-
-A proxy will be opened on http://127.0.0.1:8888 accessible only from local machine
-
-### change-ip.sh
-Run this script ```./change-ip.sh``` to restart the docker container and change VPN server
-
-### test proxy
-```
-# test current ip
-curl https://ipinfo.io/ip
-
-# test vpn ip
-curl --proxy http://127.0.0.1:8888/ https://ipinfo.io/ip
-```
-
-### crontab update
-```crontab -e``` add an entry ```@monthly /root/proton-privoxy/proton-privoxy.sh``` to update monthly
-
-### why root?
-The original code for walterl/proton-privoxy only includes a docker setup / installation. Docker by default on Debian and other linux distributions is set up under the root user and requires root user to issue docker commands.
-
-Furthermore, if you were to install under a user account, in order for the scripts to work they would need sudo with nopasswd which would essentially poke a hole into your system that can be exploited by anyone with access to the user account to gain access to root. Thus it is in my opinion safer to just keep everything under the root user.
-
-## Features
-
-### Multiple VPN connections on the same machine
-
-While not impossible, it is quite the networking feat to route traffic over
-specific VPN connections. With this Docker image you can run multiple
-containers, each setting up a different VPN connection _which doesn't affect
-your host's networking_. Routing traffic over a specific VPN connection is then
-as simple as configuring a target application's proxy server.
-
-### Share a VPN connection between devices on your LAN
-
-Run a container on one machine, and configure multiple devices on your network
-to connect to its proxy server. All connections that use that proxy server will
-be routed over the same VPN connection.
-
-### Free privacy filtering, courtesy of [Privoxy](https://www.privoxy.org/)
-
-Why did I choose Privoxy? Mostly because it's the simplest HTTP proxy to
-configure, that I've used before.
-
-### ~[Anti-feature] ProtonVPN's DNS leak protection doesn't work~
-
-**UPDATE:** This is no longer an issue, because Docker now allows
-`/etc/resolv.conf` to be updated while a container is running. It's recreated
-by Docker on container restart, but that doesn't matter, since ProtonVPN (and
-`DNS_SERVERS_OVERRIDE`) will modify it during startup.
-
-~Docker prevents containers from changing the servers used for DNS lookups, after startup. This prevents ProtonVPN from using its own leak protecting DNS server. In fact, at the moment it causes a non-fatal error in `protonvpn`.~
-
-~Ensure that you're using privacy respecting DNS servers on your Docker host, or manually specify secure servers for the container via [`--dns` options](https://docs.docker.com/config/containers/container-networking/#dns-services).~
-
 
 ## Configuration
 
@@ -147,53 +68,10 @@ username and password you would normally provide to `protonvpn init`.
 If you're using [Docker Secrets](https://docs.docker.com/engine/swarm/secrets/#build-support-for-docker-secrets-into-your-images), you can use `PVPN_USERNAME_FILE` and
 `PVPN_PASSWORD_FILE` instead.
 
-### `PVPN_TIER`
+### `PVPN_SERVER_IP`
+Alternative IP address for a protonVPN server to connect to.
 
-Your ProtonVPN account tier, called "your ProtonVPN Plan" in `protonvpn init`.
-The value must be the number corresponding to your tier from the following
-list (from `protonvpn init`):
-
-```
-0) Free
-1) Basic
-2) Plus
-3) Visionary
-```
-
-Default: `2`
-
-### `PVPN_PROTOCOL`
-
-The protocol that the OpenVPN tunnel will use. Corresponds to the `-p` flag of
-the `protonvpn` CLI tool, and the "default OpenVPN protocol" prompt in the
-`protonvpn init` process.
-
-Default: `udp`
-
-### `PVPN_CMD_ARGS`
-
-Any arguments you want to pass to `protonvpn`. For example, if you want
-`protonvpn` to connect to a random server, set this to `"connect --random"`.
-Remember the quotes.
-
-See the [`protonvpn` docs](https://github.com/ProtonVPN/linux-cli/blob/master/USAGE.md#commands) for supported commands and arguments.
-
-Default: `"connect --fastest"` (_Select the fastest ProtonVPN server._)
-
-### `PVPN_DEBUG`
-
-Set to `1` to log debugging details from `protonvpn` to the container's stdout.
-
-Default: _empty_ (debug logging disabled)
-
-### `HOST_NETWORK`
-
-If you want to expose your proxy server to your local network, you need to
-specify that network in `HOST_NETWORK`, so that it can be routed back through
-your Docker network. E.g. if your LAN uses the 10.0.0.0/8 network, add
-`-e HOST_NETWORK=10.0.0.0/8` to your `docker run` command.
-
-Default: _empty_ (no network is routed)
+Default: `149.36.51.3` #nl-free-2
 
 ### `DNS_SERVERS_OVERRIDE`
 
@@ -201,5 +79,5 @@ Comma-separated list of DNS servers to use, overriding whatever was set by
 ProtonVPN. For example, to use Quad9 DNS servers, set
 `DNS_SERVERS_OVERRIDE=9.9.9.9,149.112.112.112`.
 
-Default: _empty_ (ProtonVPN's DNS server is used)
+Default: `8.8.8.8`
 
